@@ -1,2 +1,6 @@
 boto3
 requests
+fastapi
+uvicorn
+requests
+python-dotenv
