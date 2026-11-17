@@ -27,3 +27,6 @@ npm-debug.log*
 .vscode/
 *.egg-info/
 build/
+
+# Local dev cache of SerpApi responses
+backend/.cache/
