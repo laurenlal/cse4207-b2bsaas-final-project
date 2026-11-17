@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from ingestion.serpapi_client import search_products
+from shared.cache import get_or_fetch
 
 app = FastAPI(title="Best2Buy API")
 
@@ -28,11 +29,14 @@ def get_products(
     )
 ):
     try:
-        products = search_products(q)
+        # Cached for 2 hours (CACHE_TTL_SECONDS) so page reloads don't spend SerpApi searches.
+        products, meta = get_or_fetch("products", q, lambda: search_products(q))
 
         return {
             "query": q,
             "count": len(products),
+            "cached": meta["cached"],
+            "fetchedAt": meta["fetchedAt"],
             "products": products,
         }
 
