@@ -1,0 +1,64 @@
+{
+  "_readme": "Tracked products. PLACEHOLDERS copied from the mock (api/dev_server.py CATALOG): replace them with the 3-5 real products once chosen, then run `python -m scripts.seed_products` from backend/. searchQuery is sent to SerpApi; a result must contain every mustInclude term, none of the mustExclude words, and cost between minPrice and maxPrice. Retailer names must match Google Shopping (e.g. Best Buy, Walmart, Target, Amazon.com, Back Market, eBay).",
+  "products": [
+    {
+      "productId": "sony-wh1000xm5",
+      "productName": "Sony WH-1000XM5 Wireless Headphones",
+      "searchQuery": "Sony WH-1000XM5 wireless headphones",
+      "mustInclude": ["wh-1000xm5"],
+      "minPrice": 150,
+      "maxPrice": 500,
+      "listings": [
+        { "retailer": "Best Buy", "condition": "new" },
+        { "retailer": "Walmart", "condition": "new" },
+        { "retailer": "Target", "condition": "new" },
+        { "retailer": "Amazon.com", "condition": "new" },
+        { "retailer": "Back Market", "condition": "refurbished" },
+        { "retailer": "eBay", "condition": "used" }
+      ]
+    },
+    {
+      "productId": "airpods-pro-2",
+      "productName": "Apple AirPods Pro (2nd Generation)",
+      "searchQuery": "Apple AirPods Pro 2nd generation",
+      "mustInclude": ["airpods pro"],
+      "minPrice": 120,
+      "maxPrice": 350,
+      "listings": [
+        { "retailer": "Best Buy", "condition": "new" },
+        { "retailer": "Walmart", "condition": "new" },
+        { "retailer": "Target", "condition": "new" },
+        { "retailer": "Back Market", "condition": "refurbished" }
+      ]
+    },
+    {
+      "productId": "switch-oled",
+      "productName": "Nintendo Switch OLED Model",
+      "searchQuery": "Nintendo Switch OLED model console",
+      "mustInclude": ["switch"],
+      "minPrice": 200,
+      "maxPrice": 500,
+      "listings": [
+        { "retailer": "Best Buy", "condition": "new" },
+        { "retailer": "Walmart", "condition": "new" },
+        { "retailer": "Target", "condition": "new" },
+        { "retailer": "GameStop", "condition": "used" }
+      ]
+    },
+    {
+      "productId": "ipad-10",
+      "productName": "Apple iPad 10th Generation 64GB",
+      "searchQuery": "Apple iPad 10th generation 64GB Wi-Fi",
+      "mustInclude": ["ipad"],
+      "minPrice": 200,
+      "maxPrice": 500,
+      "listings": [
+        { "retailer": "Best Buy", "condition": "new" },
+        { "retailer": "Walmart", "condition": "new" },
+        { "retailer": "Target", "condition": "new" },
+        { "retailer": "Amazon.com", "condition": "new" },
+        { "retailer": "Back Market", "condition": "refurbished" }
+      ]
+    }
+  ]
+}

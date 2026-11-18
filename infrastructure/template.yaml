@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Best2Buy wishlist price tracking.
+  EventBridge Scheduler (daily) -> Ingestion Lambda -> SerpApi -> DynamoDB.
+
+Parameters:
+  SerpApiKeyParameterName:
+    Type: String
+    Default: /best2buy/serpapi-api-key
+    Description: SSM SecureString holding the SerpApi key (create it with aws ssm put-parameter first)
+
+Resources:
+  ProductsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: bestbuy-products
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: productId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: productId
+          KeyType: HASH
+
+  PriceHistoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: bestbuy-price-history
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: listingId
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+      KeySchema:
+        - AttributeName: listingId
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+
+  IngestionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend
+      Handler: ingestion.handler.lambda_handler
+      Runtime: python3.12
+      Timeout: 120
+      MemorySize: 256
+      Environment:
+        Variables:
+          PRODUCTS_TABLE: !Ref ProductsTable
+          PRICE_HISTORY_TABLE: !Ref PriceHistoryTable
+          SERPAPI_KEY_PARAMETER: !Ref SerpApiKeyParameterName
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PriceHistoryTable
+        - SSMParameterReadPolicy:
+            ParameterName: best2buy/serpapi-api-key
+      EventInvokeConfig:
+        MaximumRetryAttempts: 0 # a failed run doesn't retry and spend more searches
+      Events:
+        Daily:
+          Type: ScheduleV2 # EventBridge Scheduler
+          Properties:
+            ScheduleExpression: cron(0 9 * * ? *)
+            ScheduleExpressionTimezone: America/Chicago
+
+Outputs:
+  IngestionFunctionName:
+    Description: Use with aws lambda invoke --function-name
+    Value: !Ref IngestionFunction
+  ProductsTableName:
+    Value: !Ref ProductsTable
+  PriceHistoryTableName:
+    Value: !Ref PriceHistoryTable

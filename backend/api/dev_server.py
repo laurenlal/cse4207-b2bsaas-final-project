@@ -37,7 +37,7 @@ app.add_middleware(
 
 LATENCY_MS = int(os.getenv("MOCK_LATENCY_MS", "300"))  # simulate network delay
 TRACKING_DAYS = min(max(int(os.getenv("MOCK_TRACKING_DAYS", "30")), 1), 30)
-INTERVAL_HOURS = 12  # matches the planned EventBridge schedule
+INTERVAL_HOURS = 24  # matches the planned EventBridge schedule
 DROP_THRESHOLD = 0.05  # a drop of 5% or more versus the previous observation
 
 # Used products are cheaper than new ones, so scale the base price by condition.

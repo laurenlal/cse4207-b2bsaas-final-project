@@ -1,7 +1,10 @@
+from datetime import datetime, timezone
+
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from ingestion.serpapi_client import search_products
+from shared import analytics, database
 from shared.cache import get_or_fetch
 
 app = FastAPI(title="Best2Buy API")
@@ -47,3 +50,43 @@ def get_products(
             status_code=502,
             detail="Unable to retrieve shopping results",
         ) from None
+
+
+def _load_item(product, now):
+    """Read one product's last 30 days of prices from DynamoDB and compute its stats."""
+    since = analytics.window_start(now).isoformat()
+    history = database.get_history([l["listingId"] for l in product.get("listings", [])], since)
+    return analytics.build_item(product, history, now)
+
+
+@app.get("/wishlist")
+def get_wishlist():
+    """Summary of every wishlist item, for the sidebar and home page."""
+    try:
+        now = datetime.now(timezone.utc)
+        items = []
+        for product in database.get_products():
+            item = _load_item(product, now)
+            if item:  # skip products with no price data yet
+                items.append(analytics.build_summary(item))
+        return {"count": len(items), "items": items}
+    except Exception as exc:
+        print(f"Wishlist load failed: {type(exc).__name__}: {exc}")
+        raise HTTPException(status_code=502, detail="Unable to load wishlist") from None
+
+
+@app.get("/wishlist/{product_id}")
+def get_wishlist_item(product_id: str):
+    """One item with every retailer offer and its price statistics."""
+    try:
+        product = database.get_product(product_id)
+        item = _load_item(product, datetime.now(timezone.utc)) if product else None
+    except Exception as exc:
+        print(f"Wishlist item load failed: {type(exc).__name__}: {exc}")
+        raise HTTPException(status_code=502, detail="Unable to load wishlist item") from None
+
+    if product is None:
+        raise HTTPException(status_code=404, detail="Unknown productId")
+    if item is None:
+        raise HTTPException(status_code=404, detail="No price data yet")
+    return item
